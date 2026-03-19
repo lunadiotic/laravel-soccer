@@ -31,15 +31,16 @@ class PlayerRequest extends FormRequest
         $teamId = $this->team_id ?? ($playerModel instanceof Player ? $playerModel->team_id : null);
 
         // nomor punggung dan team milik pemain harus unik
-        $jerseyRule = 'unique:players,jersey_number,' . ($playerId ?? NULL) . ',id' . ($teamId ? ',' . $teamId : '');
+        $jerseyRule = 'unique:players,jersey_number,' . ($playerId ?? 'NULL') . ',id'
+            . ($teamId ? ',team_id,' . $teamId : '');
 
         return [
-            'team_id' => $isUpdate ? 'sometimes|required|exists:teams,id' : 'required|exists:teams,id',
-            'name' => $isUpdate ? 'sometimes|required|string|max:255' : 'required|string|max:255',
-            'height' => $isUpdate ? 'sometimes|required|numeric|min:100|max:250' : 'required|numeric|min:100|max:250',
-            'weight' => $isUpdate ? 'sometimes|required|numeric|min:30|max:200' : 'required|numeric|min:30|max:200',
-            'position' => $isUpdate ? 'sometimes|required|string|in:penyerang,gelandang,bertahan,penjaga_gawang' : 'required|string|in:penyerang,gelandang,bertahan,penjaga_gawang',
-            'jersey_number' => $isUpdate ? ['sometimes|required|integer|min:1|max:99', $jerseyRule] : ['required|integer|min:1|max:99', $jerseyRule]
+            'team_id'       => $isUpdate ? 'sometimes|required|exists:teams,id' : 'required|exists:teams,id',
+            'name'          => $isUpdate ? 'sometimes|required|string|max:255' : 'required|string|max:255',
+            'height'        => $isUpdate ? 'sometimes|required|numeric|min:100|max:250' : 'required|numeric|min:100|max:250',
+            'weight'        => $isUpdate ? 'sometimes|required|numeric|min:30|max:200' : 'required|numeric|min:30|max:200',
+            'position'      => $isUpdate ? 'sometimes|required|in:penyerang,gelandang,bertahan,penjaga_gawang' : 'required|in:penyerang,gelandang,bertahan,penjaga_gawang',
+            'jersey_number' => $isUpdate ? ['sometimes', 'required', 'integer', 'min:1', 'max:99', $jerseyRule] : ['required', 'integer', 'min:1', 'max:99', $jerseyRule],
         ];
     }
 }
