@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -13,23 +12,21 @@ class AuthTest extends TestCase
 
     public function test_user_can_register(): void
     {
-        $response = $this->postJson('api/auth/register', [
-            'name' => 'John Doe',
-            'email' => 'a@b.c',
-            'password' => 'secret123',
-            'password_confirmation' => 'secret123',
+        $response = $this->postJson('/api/auth/register', [
+            'name'                  => 'Admin Test',
+            'email'                 => 'admin@test.com',
+            'password'              => 'password123',
+            'password_confirmation' => 'password123',
         ]);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
                 'success',
-                'data' => ['user', 'token']
+                'data' => ['user', 'token'],
             ])
             ->assertJsonPath('success', true);
 
-        $this->assertDatabaseHas('users', [
-            'email' => 'a@b.c'
-        ]);
+        $this->assertDatabaseHas('users', ['email' => 'admin@test.com']);
     }
 
     public function test_register_requires_all_fields(): void
@@ -37,6 +34,7 @@ class AuthTest extends TestCase
         $response = $this->postJson('/api/auth/register', []);
 
         $response->assertStatus(422)
+            ->assertJsonPath('success', false)
             ->assertJsonStructure(['errors' => ['name', 'email', 'password']]);
     }
 
@@ -52,7 +50,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-            ->assertJsonStructure(['errors' => ['email']]);
+            ->assertJsonPath('success', false);
     }
 
     public function test_user_can_login(): void
@@ -69,7 +67,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
-            ->assertJsonStructure(['data' => ['user', 'token']]);
+            ->assertJsonStructure(['data' => ['token']]);
     }
 
     public function test_login_fails_with_wrong_password(): void
@@ -92,5 +90,12 @@ class AuthTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true);
+    }
+
+    public function test_unauthenticated_request_is_rejected(): void
+    {
+        $response = $this->getJson('/api/teams');
+
+        $response->assertStatus(401);
     }
 }

@@ -30,7 +30,9 @@ class TeamTest extends TestCase
         $response = $this->getJson('/api/teams');
 
         $response->assertStatus(200)
-            ->assertJsonPath('success', true);
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.total', 3)
+            ->assertJsonCount(3, 'data.data');
     }
 
     public function test_can_get_single_team(): void
@@ -52,7 +54,8 @@ class TeamTest extends TestCase
 
         $response = $this->getJson('/api/teams/999');
 
-        $response->assertStatus(404);
+        $response->assertStatus(404)
+            ->assertJsonPath('success', false);
     }
 
     public function test_can_create_team(): void
@@ -94,6 +97,7 @@ class TeamTest extends TestCase
         $response = $this->postJson('/api/teams', []);
 
         $response->assertStatus(422)
+            ->assertJsonPath('success', false)
             ->assertJsonStructure(['errors' => ['name', 'founded_year', 'address', 'city']]);
     }
 
@@ -106,7 +110,8 @@ class TeamTest extends TestCase
             ['logo' => UploadedFile::fake()->create('document.pdf', 100)]
         ));
 
-        $response->assertStatus(422);
+        $response->assertStatus(422)
+            ->assertJsonPath('success', false);
     }
 
     public function test_can_update_team(): void
