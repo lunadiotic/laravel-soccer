@@ -44,44 +44,44 @@ class MatchController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(SoccerMatch $soccerMatch)
+    public function show(SoccerMatch $match)
     {
-        $soccerMatch->load(['homeTeam', 'awayTeam', 'result', 'goals.player']);
+        $match->load(['homeTeam', 'awayTeam', 'result', 'goals.player']);
 
         return response()->json([
             'success' => true,
-            'data'    => $soccerMatch,
+            'data'    => $match,
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, SoccerMatch $soccerMatch)
+    public function update(MatchRequest $request, SoccerMatch $match)
     {
         // check if the match is finished
-        if ($soccerMatch->status === 'finished') {
+        if ($match->status === 'finished') {
             return response()->json([
                 'success' => false,
                 'message' => 'Match already finished',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $soccerMatch->update($request->validated());
+        $match->update($request->validated());
 
         return response()->json([
             'success' => true,
             'message' => 'Match updated successfully',
-            'data'    => $soccerMatch->fresh()->load(['homeTeam', 'awayTeam']),
+            'data'    => $match->fresh()->load(['homeTeam', 'awayTeam']),
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(SoccerMatch $soccerMatch)
+    public function destroy(SoccerMatch $match)
     {
-        $soccerMatch->delete();
+        $match->delete();
 
         return response()->json([
             'success' => true,
