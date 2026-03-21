@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('match_id')->constrained('matches');
             $table->foreignId('player_id')->constrained('players');
+            $table->foreignId('team_id')->constrained('teams');
             $table->integer('minute');
             $table->timestamps();
             $table->softDeletes();
