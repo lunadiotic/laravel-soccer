@@ -1,0 +1,398 @@
+{
+  "info": {
+    "name": "Ayo Soccer API",
+    "description": "REST API untuk manajemen tim sepak bola amatir. Semua endpoint (kecuali login/register) memerlukan token Bearer di header Authorization.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "Diisi otomatis setelah login"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin XYZ\",\n  \"email\": \"admin@xyz.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "    pm.collectionVariables.set('token', res.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@xyz.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tim (Teams)",
+      "item": [
+        {
+          "name": "Daftar Semua Tim",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/teams"
+          }
+        },
+        {
+          "name": "Detail Tim",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/teams/1"
+          }
+        },
+        {
+          "name": "Tambah Tim",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/teams",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Persebaya Surabaya", "type": "text" },
+                { "key": "founded_year", "value": "1927", "type": "text" },
+                { "key": "address", "value": "Jl. Stadion Gelora Bung Tomo", "type": "text" },
+                { "key": "city", "value": "Surabaya", "type": "text" },
+                { "key": "logo", "type": "file", "src": "", "description": "Upload file logo (opsional)" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Tim",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/teams/1",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Persebaya Surabaya FC", "type": "text" },
+                { "key": "city", "value": "Surabaya", "type": "text" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Hapus Tim",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/teams/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pemain (Players)",
+      "item": [
+        {
+          "name": "Daftar Semua Pemain",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/players",
+              "host": ["{{base_url}}"],
+              "path": ["players"],
+              "query": [
+                { "key": "team_id", "value": "1", "disabled": true, "description": "Filter berdasarkan tim" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Daftar Pemain Per Tim",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/players?team_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["players"],
+              "query": [{ "key": "team_id", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "Detail Pemain",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/players/1"
+          }
+        },
+        {
+          "name": "Tambah Pemain",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/players",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"team_id\": 1,\n  \"name\": \"Budi Santoso\",\n  \"height\": 175.5,\n  \"weight\": 68.0,\n  \"position\": \"penyerang\",\n  \"jersey_number\": 9\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Pemain",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/players/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": \"gelandang\",\n  \"jersey_number\": 8\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Hapus Pemain",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/players/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jadwal Pertandingan (Matches)",
+      "item": [
+        {
+          "name": "Daftar Semua Jadwal",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/matches"
+          }
+        },
+        {
+          "name": "Detail Jadwal",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/matches/1"
+          }
+        },
+        {
+          "name": "Tambah Jadwal",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/matches",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"match_date\": \"2024-08-10\",\n  \"match_time\": \"15:30\",\n  \"home_team_id\": 1,\n  \"away_team_id\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Jadwal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/matches/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"match_date\": \"2024-08-15\",\n  \"match_time\": \"19:00\"\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Hapus Jadwal",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/matches/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hasil Pertandingan",
+      "item": [
+        {
+          "name": "Lihat Hasil Pertandingan",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/matches/1/result"
+          }
+        },
+        {
+          "name": "Catat Hasil Pertandingan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/matches/1/result",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"home_score\": 2,\n  \"away_score\": 1,\n  \"goals\": [\n    { \"player_id\": 1, \"minute\": 23 },\n    { \"player_id\": 1, \"minute\": 67 },\n    { \"player_id\": 3, \"minute\": 89 }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Update Hasil Pertandingan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/matches/1/result",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"home_score\": 3,\n  \"away_score\": 1,\n  \"goals\": [\n    { \"player_id\": 1, \"minute\": 23 },\n    { \"player_id\": 1, \"minute\": 67 },\n    { \"player_id\": 2, \"minute\": 78 },\n    { \"player_id\": 3, \"minute\": 89 }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Laporan Pertandingan",
+      "item": [
+        {
+          "name": "Laporan Semua Pertandingan",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/reports/matches"
+          }
+        },
+        {
+          "name": "Laporan Detail Pertandingan",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/reports/matches/1"
+          }
+        }
+      ]
+    }
+  ]
+}

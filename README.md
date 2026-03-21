@@ -1,58 +1,467 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Ayo Soccer API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API untuk manajemen tim sepak bola amatir. Dibangun dengan Laravel 11 dan Laravel Sanctum.
 
-## About Laravel
+## Persyaratan
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.2+
+- Composer
+- SQLite (default) atau MySQL
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Instalasi
 
 ```bash
-composer require laravel/boost --dev
+# Clone repository
+git clone <repo-url>
+cd ayo-soccer
 
-php artisan boost:install
+# Install dependencies
+composer install
+
+# Salin file konfigurasi
+cp .env.example .env
+
+# Generate app key
+php artisan key:generate
+
+# Buat file database SQLite
+touch database/database.sqlite
+
+# Jalankan migrasi
+php artisan migrate
+
+# Buat symlink storage untuk akses file logo
+php artisan storage:link
+
+# Jalankan server
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Server berjalan di `http://localhost:8000`.
 
-## Contributing
+## Konfigurasi Database
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Secara default menggunakan SQLite. Untuk MySQL, ubah `.env`:
 
-## Code of Conduct
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=ayo_soccer
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Autentikasi
 
-## Security Vulnerabilities
+API ini menggunakan **Laravel Sanctum** dengan token-based authentication.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. Daftar atau login untuk mendapatkan token
+2. Sertakan token di setiap request sebagai header:
+    ```
+    Authorization: Bearer <token>
+    ```
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Endpoint API
+
+### Auth
+
+#### Register
+
+```
+POST /api/auth/register
+```
+
+Body (JSON):
+
+```json
+{
+    "name": "Admin XYZ",
+    "email": "admin@xyz.com",
+    "password": "password123",
+    "password_confirmation": "password123"
+}
+```
+
+#### Login
+
+```
+POST /api/auth/login
+```
+
+Body (JSON):
+
+```json
+{
+    "email": "admin@xyz.com",
+    "password": "password123"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Login berhasil",
+  "data": {
+    "user": { ... },
+    "token": "1|abc123..."
+  }
+}
+```
+
+#### Logout
+
+```
+POST /api/auth/logout
+```
+
+Header: `Authorization: Bearer <token>`
+
+---
+
+### Tim (Teams)
+
+#### Daftar semua tim
+
+```
+GET /api/teams
+```
+
+#### Detail tim
+
+```
+GET /api/teams/{id}
+```
+
+#### Tambah tim
+
+```
+POST /api/teams
+Content-Type: multipart/form-data
+```
+
+| Field        | Tipe    | Keterangan                         |
+| ------------ | ------- | ---------------------------------- |
+| name         | string  | Nama tim (wajib)                   |
+| logo         | file    | Logo tim, format jpg/png, maks 2MB |
+| founded_year | integer | Tahun berdiri (wajib)              |
+| address      | string  | Alamat markas (wajib)              |
+| city         | string  | Kota markas (wajib)                |
+
+#### Update tim
+
+```
+PUT /api/teams/{id}
+Content-Type: multipart/form-data
+```
+
+Semua field opsional.
+
+#### Hapus tim
+
+```
+DELETE /api/teams/{id}
+```
+
+Data dihapus secara **soft delete** (tidak benar-benar hilang dari database).
+
+---
+
+### Pemain (Players)
+
+#### Daftar semua pemain
+
+```
+GET /api/players
+GET /api/players?team_id=1   # filter per tim
+```
+
+#### Detail pemain
+
+```
+GET /api/players/{id}
+```
+
+#### Tambah pemain
+
+```
+POST /api/players
+Content-Type: application/json
+```
+
+```json
+{
+    "team_id": 1,
+    "name": "Budi Santoso",
+    "height": 175.5,
+    "weight": 68.0,
+    "position": "penyerang",
+    "jersey_number": 9
+}
+```
+
+Nilai `position` yang valid: `penyerang`, `gelandang`, `bertahan`, `penjaga_gawang`
+
+> Catatan: Nomor punggung tidak boleh sama dalam satu tim.
+
+#### Update pemain
+
+```
+PUT /api/players/{id}
+```
+
+#### Hapus pemain
+
+```
+DELETE /api/players/{id}
+```
+
+---
+
+### Pertandingan (Matches)
+
+#### Daftar semua jadwal
+
+```
+GET /api/matches
+```
+
+#### Detail jadwal
+
+```
+GET /api/matches/{id}
+```
+
+#### Tambah jadwal
+
+```
+POST /api/matches
+Content-Type: application/json
+```
+
+```json
+{
+    "match_date": "2024-08-10",
+    "match_time": "15:30",
+    "home_team_id": 1,
+    "away_team_id": 2
+}
+```
+
+#### Update jadwal
+
+```
+PUT /api/matches/{id}
+```
+
+Hanya bisa diubah jika status masih `scheduled`.
+
+#### Hapus jadwal
+
+```
+DELETE /api/matches/{id}
+```
+
+---
+
+### Hasil Pertandingan
+
+#### Catat hasil pertandingan
+
+```
+POST /api/matches/{id}/result
+Content-Type: application/json
+```
+
+```json
+{
+    "home_score": 2,
+    "away_score": 1,
+    "goals": [
+        { "player_id": 5, "minute": 23 },
+        { "player_id": 5, "minute": 67 },
+        { "player_id": 11, "minute": 89 }
+    ]
+}
+```
+
+- `goals` bersifat opsional
+- Setelah hasil dicatat, status pertandingan berubah menjadi `finished`
+
+#### Update hasil pertandingan
+
+```
+PUT /api/matches/{id}/result
+```
+
+Format body sama dengan POST. Data gol lama akan diganti seluruhnya.
+
+#### Lihat hasil pertandingan
+
+```
+GET /api/matches/{id}/result
+```
+
+---
+
+### Laporan Pertandingan
+
+#### Laporan semua pertandingan
+
+```
+GET /api/reports/matches
+```
+
+#### Laporan detail satu pertandingan
+
+```
+GET /api/reports/matches/{id}
+```
+
+Contoh response:
+
+```json
+{
+    "success": true,
+    "data": {
+        "match_id": 1,
+        "match_date": "2024-08-10",
+        "match_time": "15:30:00",
+        "home_team": { "id": 1, "name": "Tim Alpha" },
+        "away_team": { "id": 2, "name": "Tim Beta" },
+        "home_score": 2,
+        "away_score": 1,
+        "final_status": "Tim Home Menang",
+        "top_scorer": {
+            "player": { "id": 5, "name": "Budi Santoso" },
+            "goal_count": 2
+        },
+        "home_team_wins": 3,
+        "away_team_wins": 1,
+        "goals": [
+            { "player_id": 5, "minute": 23 },
+            { "player_id": 5, "minute": 67 },
+            { "player_id": 11, "minute": 89 }
+        ]
+    }
+}
+```
+
+**Keterangan field laporan:**
+
+| Field            | Keterangan                                                                   |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `final_status`   | `Tim Home Menang` / `Tim Away Menang` / `Draw`                               |
+| `top_scorer`     | Pemain pencetak gol terbanyak di pertandingan ini                            |
+| `home_team_wins` | Akumulasi kemenangan tim home dari pertandingan pertama s/d pertandingan ini |
+| `away_team_wins` | Akumulasi kemenangan tim away dari pertandingan pertama s/d pertandingan ini |
+
+---
+
+## Format Response
+
+Semua response menggunakan format JSON yang konsisten:
+
+**Sukses:**
+
+```json
+{
+  "success": true,
+  "message": "Pesan sukses",
+  "data": { ... }
+}
+```
+
+**Gagal validasi (422):**
+
+```json
+{
+    "success": false,
+    "message": "Validasi gagal",
+    "errors": {
+        "field": ["Pesan error"]
+    }
+}
+```
+
+**Tidak ditemukan (404):**
+
+```json
+{
+    "success": false,
+    "message": "Data tidak ditemukan"
+}
+```
+
+**Unauthorized (401):**
+
+```json
+{
+    "message": "Unauthenticated."
+}
+```
+
+---
+
+## Testing
+
+### Menjalankan Test
+
+Test menggunakan database SQLite **in-memory** sehingga tidak mempengaruhi data development. Tidak perlu konfigurasi tambahan.
+
+```bash
+# Jalankan semua test
+php artisan test
+
+# Jalankan dengan output detail per assertion
+php artisan test --verbose
+
+# Jalankan test suite tertentu saja
+php artisan test --testsuite=Feature
+php artisan test --testsuite=Unit
+
+# Jalankan satu file test
+php artisan test tests/Feature/TeamTest.php
+
+# Jalankan satu test case spesifik
+php artisan test --filter=test_can_create_team
+```
+
+### Cakupan Test
+
+Total: **58 tests, 184 assertions**
+
+| File              | Jumlah Test | Skenario yang Diuji                                                            |
+| ----------------- | :---------: | ------------------------------------------------------------------------------ |
+| `AuthTest`        |      7      | Register, login, logout, penolakan request tanpa token                         |
+| `TeamTest`        |     10      | CRUD tim, upload logo, validasi field wajib, soft delete                       |
+| `PlayerTest`      |     11      | CRUD pemain, filter per tim, nomor punggung unik per tim, validasi posisi      |
+| `MatchTest`       |      9      | CRUD jadwal, validasi tim home ≠ away, blokir update jadwal yang sudah selesai |
+| `MatchResultTest` |     10      | Catat/update hasil, detail gol, replace gol lama, validasi player exist        |
+| `ReportTest`      |      9      | Status akhir (menang/kalah/draw), top scorer, akumulasi kemenangan             |
+
+### Konfigurasi Test
+
+Test dikonfigurasi di `phpunit.xml`. Environment yang digunakan saat testing:
+
+| Variabel        | Nilai      | Keterangan                               |
+| --------------- | ---------- | ---------------------------------------- |
+| `DB_CONNECTION` | `sqlite`   | Menggunakan SQLite                       |
+| `DB_DATABASE`   | `:memory:` | Database di RAM, tidak tersimpan ke file |
+| `CACHE_STORE`   | `array`    | Cache di memori                          |
+| `BCRYPT_ROUNDS` | `4`        | Hash lebih cepat agar test tidak lambat  |
+
+---
+
+## Keamanan
+
+- Semua endpoint (kecuali register dan login) memerlukan token autentikasi
+- Token dibuat saat login dan dihapus saat logout
+- Upload file dibatasi hanya gambar (jpg, png) maksimal 2MB
+- Validasi input ketat di setiap endpoint
+- Soft delete menjaga integritas data historis
+- Rate limiting bawaan Laravel aktif
