@@ -9,6 +9,7 @@ use App\Models\Player;
 use App\Models\SoccerMatch;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
 class MatchResultController extends Controller
@@ -18,8 +19,8 @@ class MatchResultController extends Controller
         if (!$match->result) {
             return response()->json([
                 'success' => false,
-                'message' => 'Hasil pertandingan belum dicatat',
-            ], 404);
+                'message' => 'Match result not found',
+            ], Response::HTTP_NOT_FOUND);
         }
 
         $match->load(['result', 'goals.player', 'homeTeam', 'awayTeam']);
@@ -35,8 +36,8 @@ class MatchResultController extends Controller
         if ($match->result) {
             return response()->json([
                 'success' => false,
-                'message' => 'Hasil pertandingan sudah pernah dicatat, gunakan PUT untuk memperbarui',
-            ], 422);
+                'message' => 'Match result already exists',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         DB::transaction(function () use ($request, $match) {
@@ -65,9 +66,9 @@ class MatchResultController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Hasil pertandingan berhasil dicatat',
+            'message' => 'Match result created successfully',
             'data'    => $match,
-        ], 201);
+        ], Response::HTTP_CREATED);
     }
 
     public function update(MatchResultRequest $request, SoccerMatch $match): JsonResponse
@@ -75,8 +76,8 @@ class MatchResultController extends Controller
         if (!$match->result) {
             return response()->json([
                 'success' => false,
-                'message' => 'Hasil pertandingan belum ada, gunakan POST untuk menambahkan',
-            ], 404);
+                'message' => 'Match result not found',
+            ], Response::HTTP_NOT_FOUND);
         }
 
         DB::transaction(function () use ($request, $match) {
