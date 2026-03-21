@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\MatchController;
 use App\Http\Controllers\Api\MatchResultController;
 use App\Http\Controllers\Api\PlayerController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\TeamController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,5 +24,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('result', [MatchResultController::class, 'show']);
         Route::post('result', [MatchResultController::class, 'store']);
         Route::put('result', [MatchResultController::class, 'update']);
+    });
+
+    Route::prefix('reports')->group(function () {
+        Route::get('matches', [ReportController::class, 'index']);
+        Route::get('matches/{match}', [ReportController::class, 'show']);
     });
 });
